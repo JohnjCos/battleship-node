@@ -19,23 +19,60 @@ BattleshipSchema.virtual('turn').get(function(){
     }
 })
 
-BattleshipSchema.virtual('checkHit').get(function(coordinate, player){
+BattleshipSchema.virtual('playtime').get(function(){
+    if(this.player1Ships.length >0 && this.player2Ships.length >0 ){
+        return 'play'
+    }
+    return null
+})
+
+BattleshipSchema.method('checkHit', function(coordinate, player){
     if(player === 'player1'){
-        const check2 = this.player2ships.map(ship =>ship.some(square =>square.x===coordinate.x && square.y===coordinate.y))
-        if(check2.includes(true)===true){
-            return 'hit'
+        const check2 = this.player2Ships
+            .map(ship =>ship
+                    .some(square =>square.x===coordinate.x 
+                            && square.y===coordinate.y
+                    )
+                )
+        if(check2.includes(true)){
+            return {hitOrMiss:'hit',coordinate}
         }else{
-            return 'miss'
+            return {hitOrMiss:'miss',coordinate}
+        }
+    } else if(player === 'player2'){
+        const check1 = this.player1Ships
+            .map(ship =>ship
+                .some(square =>square.x===coordinate.x 
+                    && square.y===coordinate.y
+                )
+            )
+        if(check1.includes(true)){
+            return {hitOrMiss:'hit',coordinate}
+        }else{
+            return {hitOrMiss:'miss',coordinate}
         }
     }
-    else if(player === 'player2'){
-        const check1 = this.player1ships.map(ship =>ship.some(square =>square.x===coordinate.x && square.y===coordinate.y))
-        if(check1.includes(true)===true){
-            return 'hit'
-        }else{
-            return 'miss'
-        }
+})
+
+BattleshipSchema.method('checkWin',function(){
+
+    const didPlayer1Win = this.player2Ships.every(player2Ship =>
+        player2Ship.every(player2ShipSquare =>
+            this.player1Shots.some(
+                player1Shot => player2ShipSquare.x === player1Shot.x && player2ShipSquare.y === player1Shot.y
+            )))
+            const didPlayer2Win = this.player1Ships.every(player1Ship =>
+                player1Ship.every(player1ShipSquare =>
+                    this.player2Shots.some(
+                        player2Shot => player1ShipSquare.x === player2Shot.x && player1ShipSquare.y === player2Shot.y
+                    )))
+    if(didPlayer1Win){
+        return 'player1'
     }
+    else if(didPlayer2Win){
+        return 'player2'
+    }
+    return null
 })
 
 

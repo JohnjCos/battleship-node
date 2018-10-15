@@ -3,6 +3,19 @@ const Battleship = require('./model')
 const router = express.Router()
 
 
+router.get('/:gameName',(req,res,next)=>{
+    const gameName = req.params.gameName
+
+    Battleship.findOne({gameName})
+    .then(result => {
+        const returnValue = {
+            ...result.toObject(),
+            checkWin:result.checkWin()
+        }
+        res.json(returnValue)})
+    .catch(next)
+})
+
 router.post('/',(req,res,next)=>{
     const {gameName,password} = req.body
     const newGame = {
@@ -17,8 +30,16 @@ router.post('/',(req,res,next)=>{
     Battleship.create(newGame)
     .then((result)=>{
         res.status(200).location(`/${req.originalUrl}/${gameName}`).json(result)
-    })
+    })    .catch(err => {
+        if (err.code === 11000) {
+            err = new Error('game already exists');
+            err.status = 400;
+            
+        }
+            next(err);
+    });
 })
+
 router.put('/:gameName/:player',(req,res,next)=>{
     const gameName = req.params.gameName
     const player = req.params.player
@@ -35,12 +56,25 @@ router.put('/:gameName/:player',(req,res,next)=>{
 
     Battleship.findOne({gameName})
     .then(result=>{
-        updateBattleShip[playerField]= [...result[playerField],req.body[updateField]]
+        if(updateField === 'Shots'){
+            updateBattleShip[playerField]= [
+                ...result[playerField],
+                req.body[updateField]
+            ]
+        }
+        else{
+            updateBattleShip[playerField] = req.body[updateField]
+        }
     })
         .then(()=>{
-            Battleship.findOneAndUpdate(gameName,updateBattleShip,{new:true})
+            Battleship.findOneAndUpdate({gameName},updateBattleShip,{new:true})
             .then(result =>{
-                res.json(result)
+                const returnValue = {
+                    ...result.toObject(),
+                    checkHit:result.checkHit(req.body[updateField],player),
+                    checkWin:result.checkWin()
+                }
+                res.json(returnValue)
             })
         })
         .catch(err => next(err))
