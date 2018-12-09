@@ -16,7 +16,7 @@ router.get('/:gameName',(req,res,next)=>{
     .catch(next)
 })
 
-router.post('/',(req,res,next)=>{
+router.post('/create',(req,res,next)=>{
     const {gameName,password} = req.body
     const newGame = {
         gameName,
@@ -38,6 +38,23 @@ router.post('/',(req,res,next)=>{
         }
             next(err);
     });
+})
+
+router.post('/join',(req,res,next)=>{
+    const {gameName,password} =req.body
+    const game = {gameName, password}
+    Battleship.find(game)
+        .then((result)=>{
+            console.log(result)
+            res.json(result)
+        
+        })
+        .catch(err =>{
+            if(err.code === 11000){
+                err = new Error('gameName or password incorrect')
+                err.status = 400;
+            }
+        })
 })
 
 router.put('/:gameName/:player',(req,res,next)=>{
