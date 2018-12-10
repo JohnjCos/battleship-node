@@ -46,7 +46,7 @@ router.post('/join',(req,res,next)=>{
     Battleship.find(game)
         .then((result)=>{
             console.log(result)
-            res.json(result)
+            res.status(201).json(result)
         
         })
         .catch(err =>{
