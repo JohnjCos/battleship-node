@@ -16,6 +16,15 @@ router.get('/:gameName',(req,res,next)=>{
     .catch(next)
 })
 
+router.delete('/:gameName',(req,res,next)=>{
+    const gameName = req.params.gameName
+
+    Battleship.findOneAndDelete({gameName})
+    .then(()=>{
+        res.sendStatus(204)
+    })
+})
+
 router.post('/create',(req,res,next)=>{
     const {gameName,password} = req.body
     const newGame = {
