@@ -54,7 +54,6 @@ router.post('/join',(req,res,next)=>{
     const game = {gameName, password}
     Battleship.find(game).count()
         .then((result)=>{
-            console.log(result)
             if(result.length > 0){
                 res.status(201).json(result)
             }
