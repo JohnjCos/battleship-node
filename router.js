@@ -52,16 +52,25 @@ router.post('/create',(req,res,next)=>{
 router.post('/join',(req,res,next)=>{
     const {gameName,password} =req.body
     const game = {gameName, password}
-    Battleship.find(game)
+    Battleship.find(game).count()
         .then((result)=>{
             console.log(result)
-            res.status(201).json(result)
-        
+            if(result.length > 0){
+                res.status(201).json(result)
+            }
+            return Promise.reject({
+                code: 422,
+                reason: 'ValidationError',
+                message: 'Incorrect gameName or Password',
+            });
         })
         .catch(err =>{
             if(err.code === 11000){
                 err = new Error('gameName or password incorrect')
                 err.status = 400;
+            }
+            if (err.reason === 'ValidationError') {
+                return res.status(err.code).json(err);
             }
         })
 })
